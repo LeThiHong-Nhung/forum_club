@@ -1,0 +1,410 @@
+﻿@using ForumMater2.Models
+@model PagedList.IPagedList<Post>
+@using PagedList.Mvc
+@{
+    ViewBag.Title = "Thông tin CLB";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ClubForumEntities db = new ClubForumEntities();
+    string user_id = Session["user"].ToString();
+    Club club = db.Clubs.Find(ViewBag.ClubID);
+    User user = db.Users.Find(user_id);
+    List<UserClubRole> remembers = db.UserClubRoles.OrderBy(m => m.DateTimeJoined).Where(m => m.ClubID == club.ID && m.Role > 1).ToList();
+    List<UserClubRole> remem_unconsider = db.UserClubRoles.OrderBy(m => m.DateTimeJoined).Where(m => m.ClubID == club.ID && m.Role == 1).ToList();
+    int roles = db.UserClubRoles.Where(m => m.ClubID == club.ID && m.UserID == user_id).Select(m => m.Role).FirstOrDefault();
+    List<Post> posts = club.Posts.Where(m => m.Approval != "AID0").ToList();
+    List<Plan> plans = club.Plans.ToList(); // lấy hết
+}
+@section styles{
+    <link href="~/assets/css/user/groupofme_Chief.css" rel="stylesheet" />
+}
+<input type="hidden" name="user-id" value="@user_id" />
+<input type="hidden" name="club-id" value="@club.ID" />
+<nav class="row container-fluid m-0 w-100 d-flex justify-content-center bg-light">
+    <div class="w-100 col-md-12 d-flex justify-content-center fileUpload">
+        <img src="@ViewBag.Url/assets/images/clubs/covers/@club.CoverPhoto" class="m-0 p-0 img_bia" alt="Ảnh bìa" style="border-radius: 20px">
+    </div>
+    <input class="col-6 col-md-7 h-50 mt-2 d-none" placeholder="Đang tải......" disabled="disabled" />
+    <div class="w-100 offset-2 mt-2 mb-2">
+        <h3 class="ml-md-5 ml-4">@club.Name</h3>
+        <h5 class="ml-md-5 ml-4 blockquote-footer">@club.ShortName</h5>
+        <i class="fas fa-globe ml-md-5 pl-md-4" style="font-size: 100%; color: black"> &nbsp @club.Type</i>
+        <i class="fas fa-users d-md-inline ml-md-5" style="font-size: 100%; color: black">&nbsp Số lượng thành viên : @remembers.Count</i>
+        @{
+            if (roles == 3)
+            {
+                <i class="fas fa-user-clock d-md-inline ml-md-5" style="font-size: 100%; color: black">
+                    <a href="/User/VerifyMembers/@club.ID" class="text-decoration-none text-dark">Duyệt thành viên (@remem_unconsider.Count)</a>
+                </i>
+                <i class="fas fa-cog d-md-inline ml-md-5" style="font-size: 100%; color: black">
+                    <a href="/User/EditClub/@club.ID" class="text-decoration-none text-dark">Chỉnh sửa</a>
+                </i>
+                <i class="fa fa-calendar-plus-o ml-5" aria-hidden="true" style="font-size: 100%; color: black; font-weight:bold;">
+                    <a href="/User/CreatePlan/@club.ID" class="text-decoration-none text-dark">Thêm kế hoạch</a>
+                </i>
+                @*<button class="btn btn-warning ml-5" id="delete-club">Giải tán câu lạc bộ</button>*@
+            }
+            else if (roles == 2) // đã gia nhập và xử lý cả khi nó muốn rời câu lạc bộ
+            {
+                <button class="btn btn-warning ml-5" id="btn-leave">Rời câu lạc bộ</button>
+                <button class="btn btn-info ml-5 d-none" id="btn-join">Xin gia nhập CLB</button>
+            }
+            else if (roles == 1) // hiển thị ra đang chờ duyệt
+            {
+                <div class="dropdown d-inline ml-5" id="wait-browser">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="drop_club" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Đang chờ duyệt
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <button class="dropdown-item" id="cancel-club">Hủy gia nhập</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-info ml-5 d-none" id="btn-join">Xin gia nhập CLB</button>
+            }
+            else // xin gia nhập câu lạc bộ
+            {
+                <button class="btn btn-info ml-5" id="btn-join">Xin gia nhập CLB</button>
+
+                <div class="dropdown d-inline ml-5 d-none" id="wait-browser">
+                    <button class="btn btn-secondary dropdown-toggle d-none" type="button" id="drop_club" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Đang chờ duyệt
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <button class="dropdown-item" id="cancel-club">Hủy gia nhập</button>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</nav>
+<hr class="mt-0">
+<!-- end header -->
+<!-- Body -->
+<nav class="row container-fluid mt-0 w-100 m-0 p-0">
+    <!-- left body -->
+    <nav class="boder border-bottom-1 d-none d-sm-block col-md-2 col-0 offset-md-1 p-0 left_body" id="">
+        <div class="border border-1 container-fluid text-left pt-2 pb-2" style="background-color: #7ed6df">
+            <img class="hu5pjgll bixrwtb6" src="https://static.xx.fbcdn.net/rsrc.php/v3/yN/r/P3LEV6Y0FCf.png" style="height:36px;width:36px" alt=""> &nbsp Thành viên
+        </div>
+        @{
+            foreach (var item in remembers)
+            {
+                <div class="border border-1 justify-content-center">
+                            <div class="w-100 p-2">
+                                <img src="@ViewBag.Url/assets/images/users/avatars/@item.User.Avatar" alt="avatar" class="d-inline rounded-circle img_member">
+                                <div class="d-inline"><a href="/User/SeeProfile/@item.UserID" style="text-decoration: none; color: inherit;">@item.User.FirstName @item.User.LastName</a></div>
+                                @if (roles >= 3 && item.UserID != user_id)
+                                {
+                                    <button class="float-lg-right btn-sm btn btn-danger pr-2 kick-remember" data-uid="@item.UserID" data-cid="@item.ClubID">Kích</button>
+                                }
+                                @if (item.UserID == item.Club.UserCreated)
+                                {
+                                    <i class="pl-2 d-block text-right" style="font-size: smaller;">Trưởng CLB</i>
+                                }
+
+                            </div>
+                </div>
+            }
+        }
+        <div class=" pt-2 pl-5 mb-3 border border-1 justify-content-center">
+            @{
+                if (remembers.Count > 10)
+                {
+                    <a href="#" class="text-danger text-decoration-none text-center pl-3">Xem thêm</a>
+                }
+            }
+
+        </div>
+    </nav>
+    <!-- end left body -->
+    <!-- center body -->
+    <nav class="col-12 w-100 col-md-5 ml-md-5 m-0 p-0" style="box-sizing: border-box;">
+        <!-- Post a posts -->
+        <nav class="nav_post_posts">
+            <div class="d-inline">
+                <img src="@ViewBag.Url/assets/images/users/avatars/@user.Avatar" alt="Avatar" class="avatar_post_posts rounded-circle">
+            </div>
+            <div class="d-inline ml-2">
+                <span>Bạn đang nghĩ gì ?</span>
+            </div>
+            <div class="d-inline float-right mt-md-1">
+                @{
+                    if (roles >= 2)
+                    {
+                        <a href="/User/CreatePost" class="btn btn-info" id="create-post">Đăng bài</a>
+                    }
+                    else
+                    {
+                        <a href="/User/CreatePost" class="btn btn-info disabled" id="create-post">Đăng bài</a>
+                    }
+                }
+            </div>
+        </nav>
+
+        <nav class="container-fluid mt-md-3 w-100 nav_posts mt-2 pt-md-2 pt-2">
+            @{
+                if (roles >= 2)
+                {
+                    foreach (var item in Model)
+                    {
+                        <div class="d-inline my-2 py-3 px-2 rounded-circle w-100">
+                            <img src="@ViewBag.Url/assets/images/users/avatars/@item.User.Avatar" alt="Avatar" class="avatar_post rounded-circle">
+                        </div>
+                        <div class="d-inline p-md-1 m-md-1 p-1 m-1">
+                            <span>
+                                <a href="/User/SeeProfile/@item.UserID" style="text-decoration: none; color: inherit;">
+                                    <b class="mr-md-2 mr-2">@item.User.FirstName @item.User.LastName</b>
+                                </a>
+                            </span>
+                        </div>
+                        <!-- nội dung bài đăng -->
+                        <div class="container-fluid ml-2 mb-3 mt-2 row justify-content-start">
+                            <div class="col-10">
+                                <div class="title-post">
+                                    <a href="/User/PostDetail/@item.ID">@item.Title</a>
+                                </div>
+                                <div class="text-time">
+                                    <i class="fa fa-caret-right" aria-hidden="true"></i>
+                                    <span class="text-muted">@item.DateTimeCreated.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="mt-2 mb-3">
+                    }
+                    <div class="my-3">
+                        @Html.PagedListPager(Model, page => Url.Action("ClubDetail", new { page }),
+                            new PagedListRenderOptions
+                            {
+                                LiElementClasses = new List<string> { "page-item", "page-link" },
+                                UlElementClasses = new List<string> { "pagination" },
+                                ContainerDivClasses = new List<string> { "pagination-container", "text-center" }
+                            })
+                    </div>
+                }
+            }
+        </nav>
+        <!-- end posts -->
+
+
+
+    </nav>
+    <!-- End center body -->
+    <!-- right body -->
+    <nav class="col-0 col-md-2 ml-md-5 p-0 w-100 d-sm-block d-none">
+        <div class=" border border-1 container-fluid text-left px-0" style="background-color: #7ed6df">
+            <div class="text-decoration-none p-2" style="color: inherit;">
+                <img src="http://chodongkinh.com.vn/uploads/news/2017_08/doc.png" style="height:36px;width:36px" alt=""> &nbsp Danh mục
+            </div>
+            <div class="bg-light mt-2 p-2 pl-3">
+                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#describe">
+                    Mô tả
+                </button>
+                <!-- Scrollable modal -->
+                <div class="modal fade" id="describe" tabindex="-1" aria-labelledby="exampleModalScrollableTitle" style="display: none;" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalScrollableTitle">Mô tả về câu lạc bộ</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" style="white-space: pre-line;">
+                                @Html.Raw(club.Description)
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @{
+            if (roles > 1)
+            {
+                <div class=" border border-1 container-fluid text-left px-0 mt-5" style="background-color: #7ed6df">
+                    <div class="text-decoration-none p-2" style="color: inherit;">
+                        <img src="https://static.xx.fbcdn.net/rsrc.php/v3/y5/r/rvdJw9pk06Q.png" style="height:36px;width:36px" alt=""> &nbsp Kế hoạch
+                    </div>
+                    <div class="accordion" id="plan-collapse">
+                        @{
+                            int i = 0;
+                            string idcolap = "collap";
+                            string heading = "heading";
+                            foreach (var item in plans)
+                            {
+                                string collapse = idcolap + i;
+                                string head = heading + i;
+                                i++;
+                                <div class="card">
+                                    <div class="card-header" id="@head">
+                                        <h2 class="mb-0">
+                                            <button class="btn btn-block text-left" type="button" data-toggle="collapse" data-target="#@collapse" aria-expanded="true" aria-controls="@collapse">
+                                                @item.Title
+                                            </button>
+                                        </h2>
+                                    </div>
+
+                                    <div id="@collapse" class="collapse" aria-labelledby="@head" data-parent="#plan-collapse">
+                                        <div class="card-body">
+                                            <p class="" style="white-space:pre-line;">@item.Content</p>
+                                            <p class="text-success font-weight-bold" style="font-size:smaller;">Diễn ra vào lúc @item.DateTimeExpected</p>
+                                            @{
+                                                if (roles >= 3)
+                                                {
+                                                    <a href="/User/EditPlan/@item.ID" class="btn btn-sm btn-info">Sửa</a>
+                                                    <button class="btn btn-sm btn-danger remove-plan">Xóa</button>
+                                                    <input type="hidden" class="pid" value="@item.ID" />
+                                                }
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        }
+
+
+
+    </nav>
+    <!-- end right body -->
+
+
+</nav>
+<!-- End body -->
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            var user_id = $('input[name="user-id"]').val();
+            var club_id = $('input[name="club-id"]').val();
+
+            // rời câu lạc bộ
+            $('#btn-leave').click(function (e) {
+                e.preventDefault();
+                var res = confirm("Bạn có chắc muốn rời nhóm không");
+                if (res) {
+                    $.ajax({
+                        url: '@Url.Action("LeaveClub", "User")',
+                        dataType: 'json',
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({ user_id: user_id, club_id: club_id }),
+                        success: function (data) {
+                            if (data == 'Thành công') {
+                                $('#btn-leave').addClass('d-none');
+                                $('#btn-join').removeClass('d-none');
+                                alert(data);
+                            }
+                        },
+                        error: function (err) {
+                            alert('Đã xảy ra lỗi - Rất tiếc');
+                        }
+                    });
+                    // xử lý ajax ở đây
+                }
+            });
+
+            $('#cancel-club').click(function (e) {
+                e.preventDefault();
+                var res = confirm("Bạn có chắc muốn rút lại yêu cầu xin gia nhập");
+                console.log('Cancel');
+                if (res) {
+                    $.ajax({
+                        url: '@Url.Action("CancelRequest", "User")',
+                        dataType: 'json',
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({ user_id: user_id, club_id: club_id }),
+                        success: function (data) {
+                            if (data == 'Thành công') {
+                                $('#wait-browser').addClass('d-none');
+                                $('#drop_club').addClass('d-none');
+                                $('#btn-join').removeClass('d-none');
+                                alert(data);
+                            }
+                        },
+                        error: function (err) {
+                            alert('Đã xảy ra lỗi - Rất tiếc');
+                        }
+                    });
+                }
+            });
+
+            //  giải tán câu lạc bộ
+            $('#delete-club').click(function (e) {
+                e.preventDefault();
+                var res = prompt("Bạn có chắc muốn giải tán câu lạc bộ\nNhập OKAY để giản tán ");
+                if (res.toLowerCase() == 'okay') {
+                    console.log('OK');
+                    //xử lý ajax xóa clb ở đây
+                }
+            });
+
+            // xin gia nhập vào clb
+            $('#btn-join').click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                        url: '@Url.Action("JoinClub", "User")',
+                        dataType: 'json',
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({ user_id: user_id, club_id: club_id }),
+                        success: function (data) {
+                            if (data == 'Thành công') {
+                                $('#wait-browser').removeClass('d-none');
+                                $('#drop_club').removeClass('d-none');
+                                $('#btn-join').addClass('d-none');
+                                alert(data);
+                            }
+                        },
+                        error: function (err) {
+                            alert('Đã xảy ra lỗi - Rất tiếc');
+                        }
+                    });
+            });
+
+            $('.remove-plan').click(function (e) {
+                e.preventDefault();
+                var res = confirm("Bạn có chắc muốn xóa kế hoạch này không?");
+                if (res) {
+                    var pid = $(e.target).next().val();
+                    window.location.href = "/User/RemovePlan/" + pid;
+                }
+            });
+
+            $('.kick-remember').click(function (e) {
+                e.preventDefault();
+                var res = confirm("Bạn có chắc muốn kích thành viên này ra khỏi CLB không?");
+                if (res) {
+                    var target = $(this);
+                    var cid = $(this).data('cid');
+                    var uid = $(this).data('uid');
+
+                    $.ajax({
+                        url: '@Url.Action("RemoveRemember", "User")',
+                        dataType: 'json',
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({ cid: cid, uid: uid }),
+                        success: function (data) {
+                            if (data > 0) {
+                                alert("Kích thành công");
+                                target.parent().parent().remove();
+                            }
+                        },
+                        error: function (err) {
+                            alert('Đã xảy ra lỗi - Rất tiếc');
+                        }
+                    });
+
+                }
+            });
+        });
+    </script>
+} 

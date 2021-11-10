@@ -1,0 +1,18 @@
+user	UID
+post	PID
+club	CID
+admin	AID
+comment	MID
+plan 	KID
+
+người khác nhóm 0
+chờ duyệt là số 1
+thành viên là số 2
+trưởng clb là số 3
+
+riêng tư
+1 privary
+2 công khai
+
+câu lạc bộ chưa tham gia lấy 7
+thành viên xem 10

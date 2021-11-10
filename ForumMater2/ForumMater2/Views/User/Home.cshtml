@@ -1,0 +1,211 @@
+﻿@model PagedList.IPagedList<ForumMater2.Models.Post>
+@using ForumMater2.Models
+@using PagedList.Mvc
+@using PagedList
+@{
+    ViewBag.Title = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // xử lý
+    ClubForumEntities db = new ClubForumEntities();
+    User user = db.Users.Find(Session["user"].ToString());
+
+    string url_avatar = ViewBag.Url + "/assets/images/users/avatars/" + user.Avatar;
+
+    // tất cả các clb đã được admin duyệt qua
+    List<Club> clubs = db.Clubs.Where(m => m.Approval != "AID0").ToList(); // còn xử lý tiếp
+
+    // danh sách các câu lạc bộ đã tham gia (kể cả đang xét duyệt)
+    List<Club> clubs_joining = db.UserClubRoles.Where(m => m.UserID == user.ID).Select(m => m.Club).ToList();
+
+    // danh sách đã xét duyệt
+    List<Club> clubs_considered = db.UserClubRoles.Where(m => m.UserID == user.ID && m.Role >= 2).Select(m => m.Club).ToList();
+
+    // danh sách các clb chưa tham gia
+    List<Club> clubs_unjoin = clubs.Except(clubs_joining).ToList();
+
+    // danh sách các câu lạc bộ đang chờ duyệt
+    List<Club> clubs_unconsidered = clubs_joining.Except(clubs_considered).ToList();
+
+    int offer_count = clubs_unjoin.Count;
+
+    clubs_unjoin = clubs_unjoin.Take(5).ToList();
+}
+@section styles{
+
+    
+}
+<nav class="row container-fluid mt-md-5 mt-0 w-100 m-0 p-0">
+    <!-- Left Body -->
+
+    <nav class="boder border-bottom-1 d-none d-sm-block col-md-2 col-0 offset-md-1 p-0 left_body">
+
+        <!-- Left Body P1 -->
+        <div class="w-100 m-0 header_left_body"></div>
+        <div class="imgbackgound_left_body" id=""></div>
+        <img src="@url_avatar" class="rounded-circle p-0 m-0 img_left_body">
+        <div class="border border-1 container-fluid text-center pt-5">
+            <h4 class="p-0 m-0 mb-2 mt-3">@user.FirstName @user.LastName</h4>
+        </div>
+        <div class="border border-1 border-top-0 container-fluid text-center py-1">
+            <p>Câu lạc bộ tham gia</p>
+            <p> @clubs_considered.Count <p>
+        </div>
+        <div class="border border-1 border-top-0 container-fluid text-center pt-2 pb-2">
+            <a href="/User/MyProfile" class="text-danger text-decoration-none">Xem trang cá nhân</a>
+        </div>
+        <!-- End Left Body P1 -->
+        <!-- Left Body P2 -->
+        <div class=" border border-1 mt-5 container-fluid text-left pt-2 pb-2">
+            <span>Đề xuất</span>
+            <a href="/User/CreateClub" class="float-right">Tạo câu lạc bộ</a>
+        </div>
+        <div class=" border border-1 container-fluid text-left pt-2 pb-2 pr-0">
+            @{
+                foreach (Club item in clubs_unjoin)
+                {
+                    <div class="mt-2 py-2 justify-content-center row">
+                        <div class="m-0 p-0 col-md-2">
+                            <img src="@ViewBag.Url/assets/images/clubs/covers/@item.CoverPhoto" class="rounded-circle p-0 img_clb" />
+                        </div>
+                        <div class="m-0 p-0 col-md-8 text_clb" id="">
+                            <a href="/User/ClubDetail/@item.ID" class="text-decoration-none text-dark m-0" style="font-size:12px;">@item.Name</a>
+                        </div>
+                    </div>
+                }
+                if (offer_count > 5)
+                {
+                    <div class="pl-5 pt-4 pb-3">
+                        <a href="/User/NotJoinedClubs" class="text-danger text-decoration-none pl-1">Xem thêm</a>
+                    </div>
+                }
+            }
+        </div>
+    </nav>
+    <!-- End Left Body -->
+    <!-- Center Body -->
+    <nav class="col-12 w-100 col-md-5 ml-md-5 m-0 p-0" style="box-sizing: border-box;">
+        <!-- Post a posts -->
+        <nav class="nav_post_posts">
+            <div class="d-inline">
+                <img src="@url_avatar" alt="Avatar" class="avatar_post_posts rounded-circle">
+            </div>
+            <div class="d-inline ml-2">
+                <span>Bạn đang nghĩ gì ?</span>
+            </div>
+            <div class="d-inline float-right mt-md-1">
+                @{
+                    if (clubs_considered.Count > 0)
+                    {
+                        <a href="/User/CreatePost" class="btn btn-info">Đăng bài</a>
+                    }
+                    else
+                    {
+                        <a href="/User/CreatePost" class="btn btn-info disabled">Đăng bài</a>
+                    }
+                }
+
+            </div>
+
+        </nav>
+
+        <!-- Post -->
+        <nav class="container-fluid mt-md-3 w-100 nav_posts pt-md-2 pt-2">
+            @foreach (var item in Model)
+            {
+                <div class="d-inline mt-2 p-md-1 m-md-1 p-1 m-1 rounded-circle w-100">
+                    <img src="@ViewBag.UrlAva/@item.User.Avatar" alt="Avatar" class="avatar_post rounded-circle">
+                </div>
+                <div class="d-inline p-md-1 m-md-1 p-1 m-1">
+                    <span><a href="/User/SeeProfile/@item.UserID" style="text-decoration: none; color: inherit;"><b class="mr-md-2 mr-2">@item.User.FirstName @item.User.LastName</b>&#10148;</a></span>
+                    <span><a href="/User/ClubDetail/@item.ClubID" style="text-decoration: none; color: inherit;"><b>@item.Club.Name</b></a></span>
+                </div>
+                <!-- nội dung bài đăng -->
+                <div class="container-fluid ml-2 mt-md-3 mt-2 row justify-content-start">
+                    <a class="col-2 pt-1 d-block" href="/User/PostDetail/@item.ID">
+                        <img src="@ViewBag.Url/assets/images/clubs/covers/@item.Club.CoverPhoto" class="w-100" alt="Ảnh câu lạc bộ" />
+                    </a>
+                    <div class="col-10">
+                        <div class="title-post">
+                            <a href="/User/PostDetail/@item.ID">@item.Title</a>
+                        </div>
+                        <div class="text-time">
+                            <i class="fa fa-caret-right" aria-hidden="true"></i>
+                            <span class="text-muted">@item.DateTimeCreated.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                        </div>
+                    </div>
+                </div>
+                <hr class="mt-3 mb-5">
+            }
+            <div class="my-3">
+                @Html.PagedListPager(Model, page => Url.Action("Home", new { page }),
+                    new PagedListRenderOptions
+                    {
+                        LiElementClasses = new List<string> { "page-item", "page-link" },
+                        UlElementClasses = new List<string> { "pagination" },
+                        ContainerDivClasses = new List<string> { "pagination-container", "text-center" }
+                    })
+            </div>
+
+        </nav>
+    </nav>
+    <!-- End center body -->
+    <nav class="col-0 col-md-2 ml-md-5 p-0 w-100 d-sm-block d-none">
+        <div class="border border-1">
+            <div class="img-thumbnail m-1">
+                <img src="@ViewBag.Url/assets/images/default/logo_1.png" class="w-100">
+            </div>
+        </div>
+        <div class="border border-1 my-2 py-2">
+            <div class="d-flex justify-content-center border border-0 border-bottom-1 pt-2 pb-2" style="background-color:  #7ed6df">
+                Các câu lạc bộ tham gia
+            </div>
+            @{
+                foreach (ForumMater2.Models.Club item in clubs_considered)
+                {
+                    <div class=" mt-4 justify-content-center row">
+                        <div class="m-0 p-0 col-md-2">
+                            <img src="@ViewBag.Url/assets/images/clubs/covers/@item.CoverPhoto" class="rounded-circle p-0 img_clb" />
+                        </div>
+                        <div class="m-0 p-0 col-md-6" id="text_clb">
+                            <a href="/User/ClubDetail/@item.ID" class="text-decoration-none text-dark m-0" style="font-size:13px;">@item.Name</a>
+                        </div>
+                    </div>
+                }
+            }
+
+        </div>
+        <div class="border border-1 mt-5 py-3">
+            <div class="d-flex justify-content-center border border-0 border-bottom-1 pt-2 pb-2" style="background-color:  #7ed6df">
+                Các câu lạc bộ đang chờ duyệt
+            </div>
+            @{
+                foreach (ForumMater2.Models.Club item in clubs_unconsidered)
+                {
+                    <div class=" mt-4 justify-content-center row">
+                        <div class="m-0 p-0 col-md-2">
+                            <img src="@ViewBag.Url/assets/images/clubs/covers/@item.CoverPhoto" class="rounded-circle p-0 img_clb" />
+                        </div>
+                        <div class="m-0 p-0 col-md-6" id="text_clb">
+                            <a href="/User/ClubDetail/@item.ID" class="text-decoration-none text-dark m-0" style="font-size:13px;">@item.Name</a>
+                        </div>
+                    </div>
+                }
+            }
+
+        </div>
+    </nav>
+</nav>
+
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $('.ff-active').removeClass('active');
+            $('.ff-active').eq(0).addClass('active');
+            console.log($('.ff-active'));
+        });
+    </script>
+
+}
+

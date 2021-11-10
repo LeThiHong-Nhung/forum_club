@@ -1,0 +1,243 @@
+﻿@{ 
+    string scheme = HttpContext.Current.Request.Url.Scheme;
+    string host = HttpContext.Current.Request.Url.Host;
+    int port = HttpContext.Current.Request.Url.Port;
+    string url = scheme + "://" + host + ":" + port;
+
+    ForumMater2.Models.ClubForumEntities db = new ForumMater2.Models.ClubForumEntities();
+    ForumMater2.Models.User user = db.Users.Find(Session["user"].ToString());
+    string url_avatar = ViewBag.Url + "/assets/images/users/avatars/" + user.Avatar;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Diễn đàn CLB-NTU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="@url/assets/css/user/home.css" />
+    @RenderSection("styles", required: false)
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <style>
+        li.nav-item.ff-active.active {
+            background-color: beige !important;
+            border-radius: 20px !important;
+        }
+        body{
+            overflow-x : hidden;
+        }
+        img{
+            object-fit : cover;
+        }
+    </style>
+    <!-- header -->
+    <!-- Tim kiem va logo -->
+    <nav class="row m-0 container-fluid w-100 p-3 mb-3 rounded header">
+        <div class="col-12 col-md-2 d-none d-sm-block text-center mb-0 m-0 p-0">
+            <img src="@url/assets/images/logoes/logo-ntu.png" class="img-thumbnail m-0 p-0 logo" id="">
+        </div>
+        <div class="col-12 col-md-4 d-sm-flex align-items-center d-none">
+            <form class="input-group" action="/User/Search" method="get">
+                <input type="search" placeholder="Nhập từ bạn cần tìm?" aria-describedby="button-addon1" name="key_word" class="form-control border-0 bg-light">
+                <div class="input-group-append">
+                    <button id="button-addon1" type="submit" class="btn btn-link btn-light text-dark"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+        <!-- End Tim kiem va logo -->
+        <!-- TenCLB và tìm kiếm -->
+        @*<nav class="d-sm-none show row col-12 m-0 p-0">
+            <div class="col-5 mt-2 p-0">
+                <p class="p-2 logoText">NTU CLUB</p>
+            </div>
+            <form class="search_box d-block col-7 w-100 h-100 mt-2 m-0 pt-2 text-right" action="/User/Search" method="post" id="fomr-search">
+                <button class="search_btn float-right m-0 w-auto"><i class="fas fa-search" id="search"></i></button>
+                <input type="text" class="search_txt float-right m-0 pl-2 text-dark" name="search_txt" placeholder="Bạn Muốn Tìm gì?">
+
+            </form>
+        </nav>*@
+        <!-- End Ten CLB va tim kiem -->
+        <!-- Menu Chinh -->
+        <nav class="nav navbar-expand justify-content-center col col-md-4 align-items-center menu_first" id="">
+            <!-- content menu -->
+            <ul class="navbar-nav mb-0">
+                <li class="nav-item mr-md-3 ml-3 p-1 px-md-4 px-4 ff-active">
+                    <a href="/User/Home" class="nav-link text-dark">
+                        <i class="fas fa-home d-block text-center"></i>
+                    </a>
+                </li>
+                <li class="nav-item mr-md-3 p-1 px-md-4 px-4 ff-active">
+                    <a href="/User/AllClubs" class="nav-link text-dark">
+                        <i class="fas fa-users d-block text-center"></i>
+                    </a>
+                </li>
+
+                <li class="nav-item mr-md-3 p-1 px-md-4 px-4 ff-active">
+                    <a href="#" class="nav-link text-dark" data-toggle="dropdown">
+                        <i class="far fa-bell text-center d-block"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <h6 class="dropdown-header">
+                            Thông Báo
+                        </h6>
+                        <a class="dropdown-item d-flex" href="#">
+                            <div class="mr-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">5-5-2021</div>
+                                <span class="font-weight-bold">Lâm Trường dẫn Sơn Hoàng đi ăn lẩu</span>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex" href="#">
+                            <div class="mr-3">
+                                <div class="icon-circle bg-success">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">5-5-2021</div>
+                                Hóa đơn 500K! Lâm Trường trả :)
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex" href="#">
+                            <div class="mr-3">
+                                <div class="icon-circle bg-warning">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">5-5-2021</div>
+                                Sơn Hoàng bảo: oke luôn.
+                            </div>
+                        </a>
+
+                    </div>
+                </li>
+                <li class="nav-item mr-md-3 p-1 px-md-4 px-4 d-sm-none show">
+                    <a href="setting.html" class="nav-link text-dark">
+                        <i class="fas fa-cog text-center"></i>
+                    </a>
+                </li>
+            </ul>
+
+        </nav>
+        <!-- End Menu Chinh -->
+        <!-- menu user -->
+        <div class="btn-group col-md-1 d-block d-md-flex align-items-center w-100">
+
+            <img src="@url_avatar" class=" rounded-circle mt-md-1 d-none d-sm-block img_avatar">
+
+            <button class="btn d-none d-sm-block dropdown-toggle mt-md-1" data-toggle="dropdown">
+                @user.FirstName @user.LastName
+            </button>
+
+            <div class="dropdown-menu p-3">
+                <div>
+                    <div class="text-center">
+                        <a href="/User/MyProfile" class="d-block text-decoration-none">Cài đặt</a>
+                        <hr>
+                    </div>
+                    <div class="text-center">
+                        <a href="/Log/SignOut" class="text-center w-100 text-decoration-none">Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End menu User -->
+    </nav>
+    <!-- End header -->
+
+    @RenderBody()
+
+    <div class="footer mt-5 row m-0 px-3 pt-5 pb-3" style="background-color: #f1f1f1;">
+        <!-- Footer -->
+        <hr />
+        <div class="col-6">
+            <p class="text-dark font-weight-bold">DIỄN ĐÀN CÁC CLB - NTU</p>
+            <p>Trang web được thực hiện bởi nhóm 2 lớp 60CNTT-2</p>
+        </div>
+        <div class="col-6">
+            <p class="font-weight-bold">Mọi thắc mắc liên hệ</p>
+            <p>SĐT : 0797979790</p>
+            <p>Email : nsontung.it@gmail.com</p>
+        </div>
+        <!-- Footer -->
+    </div>
+    <footer class="text-center text-white" style="background-color: #f1f1f1;">
+        <!-- Grid container -->
+        <div class="container pt-4">
+            <!-- Section: Social media -->
+            <section class="mb-4">
+                <!-- Facebook -->
+                <a class="btn btn-link btn-floating btn-lg text-dark m-1"
+                   href="#!"
+                   role="button"
+                   data-mdb-ripple-color="dark">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+
+                <!-- Twitter -->
+                <a class="btn btn-link btn-floating btn-lg text-dark m-1"
+                   href="#!"
+                   role="button"
+                   data-mdb-ripple-color="dark">
+                    <i class="fab fa-twitter"></i>
+                </a>
+
+                <!-- Google -->
+                <a class="btn btn-link btn-floating btn-lg text-dark m-1"
+                   href="#!"
+                   role="button"
+                   data-mdb-ripple-color="dark">
+                    <i class="fab fa-google"></i>
+                </a>
+
+                <!-- Instagram -->
+                <a class="btn btn-link btn-floating btn-lg text-dark m-1"
+                   href="#!"
+                   role="button"
+                   data-mdb-ripple-color="dark">
+                    <i class="fab fa-instagram"></i>
+                </a>
+
+                <!-- Linkedin -->
+                <a class="btn btn-link btn-floating btn-lg text-dark m-1"
+                   href="#!"
+                   role="button"
+                   data-mdb-ripple-color="dark">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <!-- Github -->
+                <a class="btn btn-link btn-floating btn-lg text-dark m-1"
+                   href="#!"
+                   role="button"
+                   data-mdb-ripple-color="dark">
+                    <i class="fab fa-github"></i>
+                </a>
+            </section>
+            <!-- Section: Social media -->
+        </div>
+        <!-- Grid container -->
+        <!-- Copyright -->
+        <div class="text-center text-dark p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            © 2020 Copyright:
+            <a class="text-dark" href="#">Asp .NET MVC</a>
+        </div>
+        <!-- Copyright -->
+    </footer>
+
+    @Scripts.Render("~/bundles/jquery")
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

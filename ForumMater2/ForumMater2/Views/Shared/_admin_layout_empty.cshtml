@@ -1,0 +1,76 @@
+﻿@using ForumMater2.Models
+@{
+    ClubForumEntities db = new ClubForumEntities();
+    string admin_id = Session["admin"].ToString();
+    Administrator admin = db.Administrators.Find(admin_id);
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Diễn đàn CLB-NTU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+    <link href="~/assets/css/admin/layout.css" rel="stylesheet" />
+    @RenderSection("styles", required: false)
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body style="font-size:13px;">
+
+
+    <nav class="row m-0 container-fluid w-100 p-3 mb-3 rounded header justify-content-between">
+        <div class="col-12 col-md-2 d-none d-sm-block text-center mb-0 m-0 p-0">
+            <img src="@ViewBag.Url/assets/images/logoes/logo-ntu.png" class="img-thumbnail m-0 p-0 logo" id="">
+        </div>
+        <div class="col-12 col-md-6 d-sm-flex align-items-center d-none">
+            <div class="input-group">
+                <input type="search" placeholder="Nhập từ bạn cần tìm?" aria-describedby="button-addon1" class="form-control border-0 bg-light">
+                <div class="input-group-append">
+                    <button id="button-addon1" type="submit" class="btn btn-link btn-light text-dark"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+        <!-- End Tim kiem va logo -->
+        <!-- End Ten CLB va tim kiem -->
+        <!-- menu user -->
+        <div class="btn-group col-md-3 d-block d-md-flex align-items-center w-100">
+
+            <img src="~/assets/images/default/admin.png" class=" rounded-circle mt-md-1 d-none d-sm-block img_avatar">
+
+            <button class="btn d-none d-sm-block dropdown-toggle mt-md-1 text-left" data-toggle="dropdown">
+                @admin.FullName
+            </button>
+
+            <div class="dropdown-menu p-3">
+                <div>
+                    <div class="text-center">
+                        <a href="/User/MyProfile" class="d-block text-decoration-none">Cài đặt</a>
+                        <hr>
+                    </div>
+                    <div class="text-center">
+                        <a href="/Log/SignOut" class="text-center w-100 text-decoration-none">Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End menu User -->
+    </nav>
+
+    <a href="/Admin/Home" class="btn btn-info ml-5 my-3">Quay lại trang chủ</a>
+
+    <div class="row m-0 justify-content-center">
+        <div class="col-8">
+            @RenderBody()
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

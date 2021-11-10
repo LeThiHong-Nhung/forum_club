@@ -1,0 +1,48 @@
+﻿@using ForumMater2.Models
+@model Plan
+@{
+    ViewBag.Title = "Kế hoạch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3 class="text-center my-5">Sửa đổi kế hoạch</h3>
+<div class="row m-0 p-0 justify-content-center">
+    <form class="col-6 was-validated" action="/User/EditPlan" method="post">
+        <input type="hidden" name="plan-id" value="@Model.ID" />
+        <div class="form-group">
+            <label for="titile">Tiêu đề</label>
+            <input type="text" class="form-control" id="title" name="title" value="@Model.Title" required />
+            <div class="valid-feedback">Hợp lệ</div>
+            <div class="invalid-feedback">Không để trống</div>
+        </div>
+        <!--Thời gian bắt đầu-->
+        <div class="form-group">
+            <label for="start-datetime">Thời gian bắt đầu</label>
+            <input type="datetime-local" class="form-control" name="start-datetime" value="@Model.DateTimeExpected.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")" id="start-datetime" required />
+            <div class="valid-feedback">Hợp lệ</div>
+            <div class="invalid-feedback">Không để trống</div>
+        </div>
+
+        <!--Nội dung-->
+        <div class="form-group">
+            <label for="content">Nội dung</label>
+            <textarea class="form-control" id="content" name="content" rows="3" required>@Model.Content</textarea>
+            <div class="valid-feedback">Hợp lệ</div>
+            <div class="invalid-feedback">Không để trống</div>
+        </div>
+        <button class="btn btn-info" type="submit">Lưu kế hoạch</button>
+        <button class="btn btn-secondary" id="reset">Làm mới</button>
+    </form>
+</div>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $('#reset').click(function (e) {
+                e.preventDefault();
+                $('#title').val("");
+                $('#start-datetime').val("");
+                $('#content').val('');
+            });
+        });
+    </script>
+}
